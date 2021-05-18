@@ -26,9 +26,7 @@ var server = http.createServer(app);
  * Listen on provided port, on all network interfaces.
  */
 
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+
 
 /**
  * Normalize a port into a number, string, or false.
@@ -96,12 +94,15 @@ const postgrator = new Postgrator({
   migrationDirectory: __dirname + '/../migrations',
   driver: 'pg',
   connectionString: process.env.DATABASE_URL,
-  ssl: false,
+  ssl: process.env.NODE_ENV === 'production',
 })
 
 postgrator.migrate()
   .then((appliedMigrations) => {
     console.log(`Applied ${appliedMigrations.length} migrations. Starting server...`)
+    server.listen(port);
+    server.on('error', onError);
+    server.on('listening', onListening);
   })
   .catch((error) => {
     console.log('Unable to run migrations')
